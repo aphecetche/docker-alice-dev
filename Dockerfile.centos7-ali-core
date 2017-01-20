@@ -1,0 +1,22 @@
+FROM aphecetche/centos7-ali-core
+
+ARG userName=unknown
+ARG userGroup=unknown
+ARG userId=1234
+ARG userGroupId=1234
+
+# some play with group. Must first delete the existing GID if any
+
+RUN echo userName=$userName userGroup=$userGroup userId=$userId userGroupId=$userGroupId
+
+RUN (getent group $userGroupId) 2>&1 > /dev/null && groupdel $(getent group $userGroupId | cut -d ':' -f 1) || echo "no groupid to delete"
+
+RUN groupdel $userGroup 2>&1 > /dev/null || echo "no group to delete"
+
+# then create group and user identical to given args
+RUN groupadd $userGroup -g $userGroupId && useradd $userName -u $userId -g $userGroupId && usermod -p "" $userName
+
+ADD bashrc /home/$userName/.bashrc
+
+USER $userName
+
