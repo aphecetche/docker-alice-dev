@@ -9,6 +9,7 @@ cd $myhome
 export WORK_DIR="$myhome/alicesw/$ALI_RUN/sw"
 
 cd $WORK_DIR
-cd ..
+cd ../$ALI_CONTEXT
 
+aliBuild analytics on
 

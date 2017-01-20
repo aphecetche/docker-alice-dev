@@ -45,6 +45,7 @@ ali_start_container() {
     # on input a number of bind mounted directories (ro) :
     # - .globus to get the certificate for alien-token-init
     # - $what (either AliRoot or AliPhysics) to get the relevant source code
+    # - alidist (to avoid having to mount the context directory rw in the container)
     # - repos/$what as the previous one is a worktree from this one
     #
     # on "output" a single docker-managed volume containing the build
@@ -81,6 +82,7 @@ ali_start_container() {
         --volume vc_${ALI_RUN}_sw:$HOME/alicesw/${ALI_RUN}/sw \
         --volume $HOME/.globus:$HOME/.globus:ro \
         --volume $HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:ro \
+        --volume $HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/alidist:$HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/alidist:ro \
         --volume $HOME/alicesw/repos/${ALI_WHAT}:$HOME/alicesw/repos/${ALI_WHAT}:ro \
         $@ \
         centos7-ali-core \
@@ -184,7 +186,7 @@ ali_vim() {
 
 ali_o2() {
 
-    ali_docker run3 o2-dev O2
+    ali_docker run3 o2-dev O2 -v $HOME/alicesw/run3/o2-dev/FairRoot:$HOME/alicesw/run3/o2-dev/FairRoot:ro -v$(pwd):/data
 }
 
 ali_physics() {
