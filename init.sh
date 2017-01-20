@@ -74,6 +74,7 @@ ali_start_container() {
 
     docker_run_withX11 --interactive --tty $detach \
         --name "$ALI_CONTEXT" \
+        --env "ALI_RUN=$ALI_RUN" \
         --env "ALI_WHAT=$ALI_WHAT" \
         --env "ALI_VERSION=$ALI_VERSION" \
         --env "ALI_CONTEXT=$ALI_CONTEXT" \

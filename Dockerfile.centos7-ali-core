@@ -14,9 +14,11 @@ RUN (getent group $userGroupId) 2>&1 > /dev/null && groupdel $(getent group $use
 RUN groupdel $userGroup 2>&1 > /dev/null || echo "no group to delete"
 
 # then create group and user identical to given args
-RUN groupadd $userGroup -g $userGroupId && useradd $userName -u $userId -g $userGroupId && usermod -p "" $userName
+RUN groupadd $userGroup -g $userGroupId && useradd $userName -m -u $userId -g $userGroupId && usermod -p "" $userName
 
 ADD bashrc /home/$userName/.bashrc
+
+RUN chown -R $userName:$userGroup /home/$userName/
 
 USER $userName
 

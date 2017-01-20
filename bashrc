@@ -1,7 +1,14 @@
 
+myhome=/home/$(whoami)
+
 if [ -d /Users/ ]; then
-    echo "Mac version"
-else
-    echo "Linux version"
+    myhome=/Users/$(whoami)
 fi
+
+cd $myhome
+export WORK_DIR="$myhome/alicesw/$ALI_RUN/sw"
+
+cd $WORK_DIR
+cd ..
+
 
