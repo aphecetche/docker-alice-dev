@@ -13,3 +13,4 @@ cd ../$ALI_CONTEXT
 
 aliBuild analytics on
 
+ALICE_WORK_DIR=$WORK_DIR; eval "`alienv shell-helper`"
