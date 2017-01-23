@@ -18,7 +18,7 @@ RUN groupadd $userGroup -g $userGroupId && useradd $userName -m -u $userId -g $u
 
 ADD bashrc /home/$userName/.bashrc
 
-RUN chown -R $userName:$userGroup /home/$userName/
+# insure the directories will mount later on for the builds have the correct permissions here
+RUN mkdir -p /home/$userName/alicesw/{run2,run3}/sw && chown -R $userName:$userGroup /home/$userName/
 
 USER $userName
-
