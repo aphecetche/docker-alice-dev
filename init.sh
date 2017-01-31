@@ -129,7 +129,8 @@ ali_setup_tmux() {
 
     tmux send-keys -t $wname.$pane_exec "cd $dir; docker exec -it $wname /bin/bash" enter
     tmux send-keys -t $wname.$pane_build "cd $dir; docker exec -it $wname /bin/bash" enter
-    tmux send-keys -t $wname.$pane_localedit "cd $dir/$what" enter
+    tmux send-keys -t $wname.$pane_localedit "cd $dir/$what; export ALI_RUN=run; export ALI_WHAT=$what; export
+    ALI_CONTEXT=$context; " enter
 
     tmux send-keys -t $wname.$pane_build "cd /alicesw/sw/BUILD/$what-latest-$version/$what" enter
 
