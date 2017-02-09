@@ -1,16 +1,7 @@
 
-myhome=/home/$(whoami)
+ls /home/$(whoami)/alicesw/$ALI_RUN/sw/slc* > /dev/null 2>&1 && myhome=/home/$(whoami) || myhome=/Users/$(whoami)
 
-if [ -d /Users/ ]; then
-    myhome=/Users/$(whoami)
-fi
-
-cd $myhome
-export WORK_DIR="$myhome/alicesw/$ALI_RUN/sw"
-
-cd $WORK_DIR
-cd ../$ALI_CONTEXT
-
+cd $myhome/alicesw/$ALI_RUN
 aliBuild analytics on
+ALICE_WORK_DIR=$(pwd)/sw; eval "`alienv shell-helper`"
 
-ALICE_WORK_DIR=$WORK_DIR; eval "`alienv shell-helper`"

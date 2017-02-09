@@ -187,7 +187,13 @@ ali_vim() {
 
 ali_o2() {
 
-    ali_docker run3 o2-dev O2 -v $HOME/alicesw/run3/o2-dev/FairRoot:$HOME/alicesw/run3/o2-dev/FairRoot:ro -v$(pwd):/data
+    ali_docker run3 o2-dev O2 \
+        -v $HOME/alicesw/run3/o2-dev/FairRoot:$HOME/alicesw/run3/o2-dev/FairRoot:ro \
+        -v $HOME/alicesw/run3/o2-dev/DDS:$HOME/alicesw/run3/o2-dev/DDS \
+        -v$(pwd):/data
+
+    # note that DDS can not be mounted read-only as some version file is generated in the
+    # source directory (under etc/version) during install stage...
 }
 
 ali_physics() {
