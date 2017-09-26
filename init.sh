@@ -5,29 +5,27 @@
 # the basis for all this is a naming convention for the directories on
 # the local machine or within the container(s)
 #
-# $HOME/alicesw/runN/context/what
+# $HOME/alice/context/what
 #
-# where N = 2 or 3
 # what = AliRoot, O2 (case sensitive)
 # context is used to group dev environments (e.g. o2 dev with AliceO2, FairRoot, AliRoot checked-out
 # locally vs o2 ref where only AliceO2 is checked-out)
 #
-# also, the built stuff is kept in docker volumes named vc_runN_sw
-# (expected to be mounted under $HOME/alicesw/runN/sw directory in
-# the container(s))
-#
 # For instance :
 #
-# /Users/laurent/alicesw/run3
-# ├── aliroot-ed-detector-experts
+# /Users/laurent/alice
+# ├── ali-master
 # │   ├── AliRoot
-# ├── aliroot-feature-muonhlt
-# │   ├── AliRoot
+# │   ├── alidist
+# ├── ali-physics-master
+# │   ├── AliPhysics
+# │   ├── alidist
 # ├── o2-dev
+# │   ├── AliRoot
 # │   ├── FairRoot
 # │   ├── O2
-# ├── root6
-# │   ├── ROOT
+# │   ├── alidist
+# │   ├── alo
 # └── sw
 #     ├── BUILD
 #     ├── INSTALLROOT
@@ -36,7 +34,6 @@
 #     ├── SPECS
 #     ├── TARS
 #     └── osx_x86-64
-#
 
 ali_start_container() {
 
@@ -46,16 +43,10 @@ ali_start_container() {
     # - .globus to get the certificate for alien-token-init
     # - $what (either AliRoot or AliPhysics) to get the relevant source code
     # - alidist (to avoid having to mount the context directory rw in the container)
-    # - repos/$what as the previous one is a worktree from this one
-    #
-    # on "output" a single docker-managed volume containing the build
-    # and install directories (vc_run2_sw)
-    # (where vc_ denotes a Volume Container)
     #
 
-    export ALI_RUN=$1
-    export ALI_CONTEXT=$2
-    export ALI_WHAT=$3
+    export ALI_CONTEXT=$1
+    export ALI_WHAT=$2
 
     local detach="--rm"
     local exec="/bin/bash"
@@ -75,18 +66,16 @@ ali_start_container() {
 
     docker_run_withX11 --interactive --tty $detach \
         --name "$ALI_CONTEXT" \
-        --env "ALI_RUN=$ALI_RUN" \
         --env "ALI_WHAT=$ALI_WHAT" \
         --env "ALI_VERSION=$ALI_VERSION" \
         --env "ALI_CONTEXT=$ALI_CONTEXT" \
-        --volume vc_${ALI_RUN}_sw:$HOME/alicesw/${ALI_RUN}/sw \
+        --volume $HOME/alice/sw:$HOME/alice/sw \
         --volume $HOME/.globus:$HOME/.globus:ro \
-        --volume $HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:ro \
-        --volume $HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/alidist:$HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/alidist:ro \
-        --volume $HOME/alicesw/repos/${ALI_WHAT}:$HOME/alicesw/repos/${ALI_WHAT}:ro \
+        --volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
+        --volume $HOME/alice/${ALI_CONTEXT}/alidist:$HOME/alice/${ALI_CONTEXT}/alidist:ro \
         $@ \
         centos7-ali-core \
-        $exec
+        $exec -ls
 
     # the image used, centos7-ali-core, is built from aphecetche/centos7-ali-core, by adding
     # the local user as the default user (instead of root), so we can matching UID/GUI on
@@ -114,10 +103,9 @@ ali_setup_tmux() {
     # ---------------------------------------
     #
 
-    local run=$1
-    local context=$2
-    local what=$3
-    local dir=$HOME/alicesw/$run/$context
+    local context=$1    
+    local what=$2
+    local dir=$HOME/alice/$context
     local wname=$context
     local pane_localedit=1
     local pane_build=2
@@ -129,10 +117,10 @@ ali_setup_tmux() {
 
     tmux send-keys -t $wname.$pane_exec "cd $dir; docker exec -it $wname /bin/bash" enter
     tmux send-keys -t $wname.$pane_build "cd $dir; docker exec -it $wname /bin/bash" enter
-    tmux send-keys -t $wname.$pane_localedit "cd $dir/$what; export ALI_RUN=run; export ALI_WHAT=$what; export
+    tmux send-keys -t $wname.$pane_localedit "cd $dir/$what; export ALI_WHAT=$what; export
     ALI_CONTEXT=$context; " enter
 
-    tmux send-keys -t $wname.$pane_build "cd /alicesw/sw/BUILD/$what-latest-$version/$what" enter
+    tmux send-keys -t $wname.$pane_build "cd /alice/sw/BUILD/$what-latest-$version/$what" enter
 
     for pane in 1 2 3; do
         tmux send-keys -t $wname.$pane "clear" enter
@@ -146,31 +134,29 @@ ali_docker() {
     # run a container with the source locally on the Mac
     # and the build/install in a managed docker container
     # 
-    run=${1:="run3"}
+    context=${1:="o2-dev"}
 
-    context=${2:="o2-dev"}
+    what=${2:="O2"}
 
-    what=${3:="O2"}
+    shift 2
 
-    shift 3
-
-    if ! test -d $HOME/alicesw/$run/$context/$what; then
-        echo "Directory $HOME/alicesw/$run/$context/$what does not exists !"
-        echo "The directories I know of in $run are :"
-        ls -d $HOME/alicesw/$run/*
+    if ! test -d $HOME/alice/$context/$what; then
+        echo "Directory $HOME/alice/$context/$what does not exists !"
+        echo "The directories I know of in :"
+        ls -d $HOME/alice/*
         return
     fi
 
     if ! dexist "$context"; then
         # start a new container 
         echo "trailing arguments passed as is : $@"
-        ali_start_container $run $context $what --detach $@
+        ali_start_container $context $what --detach $@
         sleep 2
     fi
 
     # setup the tmux layout if needed
-    if [[ $TMUX ]]; then
-        ali_setup_tmux $run $context $what
+    if [[ $TMUX && $USE_TMUX ]]; then
+        ali_setup_tmux $context $what
     else
         # simply connect to the container
         docker exec -it $context /bin/bash
@@ -180,16 +166,30 @@ ali_docker() {
 ali_vim() {
 
     docker run -it --rm -v "$PWD:$PWD" \ 
-    --volume vc_${ALI_RUN}_sw:/home/$UID/alicesw/${ALI_RUN}/sw \
-        --volume $HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alicesw/${ALI_RUN}/${ALI_CONTEXT}/${ALI_WHAT}:ro \
+    --volume $HOME/alice/sw:/home/$UID/alice/sw \
+        --volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
         -w "$PWD" -p 1337:1337 alpine-vim $@
 }
 
 ali_o2() {
 
-    ali_docker run3 o2-dev O2 \
-        -v $HOME/alicesw/run3/o2-dev/FairRoot:$HOME/alicesw/run3/o2-dev/FairRoot:ro \
-        -v $HOME/alicesw/run3/o2-dev/DDS:$HOME/alicesw/run3/o2-dev/DDS \
+    ali_docker o2-dev O2 \
+        -v $HOME/alice/o2-dev/FairRoot:$HOME/alice/o2-dev/FairRoot:ro \
+        -v $HOME/alice/o2-dev/DDS:$HOME/alice/o2-dev/DDS \
+        -v$(pwd):/data
+
+    # note that DDS can not be mounted read-only as some version file is generated in the
+    # source directory (under etc/version) during install stage...
+}
+
+ali_alo() {
+
+    ali_docker o2-dev alo \
+        -v $HOME/alice/o2-dev/AliRoot:$HOME/alice/o2-dev/AliRoot:ro \
+        -v $HOME/alice/o2-dev/O2:$HOME/alice/o2-dev/O2:ro \
+        -v $HOME/alice/o2-dev/FairRoot:$HOME/alice/o2-dev/FairRoot:ro \
+        -v $HOME/alice/o2-dev/ROOT:$HOME/alice/o2-dev/ROOT:ro \
+        -v $HOME/alice/o2-dev/DDS:$HOME/alice/o2-dev/DDS \
         -v$(pwd):/data
 
     # note that DDS can not be mounted read-only as some version file is generated in the
@@ -198,12 +198,12 @@ ali_o2() {
 
 ali_physics() {
 
-    ali_docker run2 aliphysics-master AliPhysics
+    ali_docker aliphysics-master AliPhysics
 }
 
 ali_o2_ref() {
 
-    ali_docker run3 o2-ref O2 
+    ali_docker o2-ref O2 
 }
 
 ali_cvmfs() {
@@ -228,5 +228,5 @@ ali_cvmfs() {
 
 ali_root6() 
 {
-    ali_docker run3 root6 ROOT
+    ali_docker root6 ROOT
 }
