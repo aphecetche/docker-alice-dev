@@ -1,4 +1,8 @@
+# What's in there
+
 Some utilities to work with docker containers to develop Alice software
+
+# Usage
 
 Typical usage would be :
 
@@ -13,3 +17,16 @@ Convenience shortcuts are defined, e.g `ali_alo` creates a container to develop
 [alo](https://github.com/aphecetche/alo).
 
 See `init.sh` comments for more information.
+
+# Notes on performance
+
+The performance of using files from bind mounts does not seem to be perfectly adequate as far as
+performance goes. It seems `osxfs` is not yet up to the task... Hopefully that will improve in the future. 
+
+For the input volume(s) (the one(s) containing the source files) there is nothing that can be done except for waiting
+for Docker to work faster ;-)
+
+For the output volume one option is to use a docker volume (i.e. have the build artifacts store within the Linux VM, not
+on the Mac host). 
+
+Timing the difference for a compilation ? => ( insert numbers here )

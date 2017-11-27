@@ -11,6 +11,8 @@
 # context is used to group dev environments (e.g. o2 dev with AliceO2, FairRoot, AliRoot checked-out
 # locally vs o2 ref where only AliceO2 is checked-out)
 #
+# the output sw directory below is assumed to be a docker volume by default
+#
 # For instance :
 #
 # /Users/laurent/alice
@@ -35,6 +37,16 @@
 #     ├── TARS
 #     └── osx_x86-64
 
+ALI_SW_VOLUME="vc_alice_sw"
+#ALI_SW_VOLUME="$HOME/alice/sw"
+
+ali_assert_sw_volume()
+{
+    if [ "$ALI_SW_VOLUME" = "vc_alice_sw" ]; then
+        docker volume create --name $ALI_SW_VOLUME
+    fi
+}
+
 ali_start_container() {
 
     # start a detached aliroot container, in x11 mode
@@ -44,6 +56,8 @@ ali_start_container() {
     # - $what (either AliRoot or AliPhysics) to get the relevant source code
     # - alidist (to avoid having to mount the context directory rw in the container)
     #
+
+   ali_assert_sw_volume
 
     export ALI_CONTEXT=$1
     export ALI_WHAT=$2
@@ -69,13 +83,14 @@ ali_start_container() {
         --env "ALI_WHAT=$ALI_WHAT" \
         --env "ALI_VERSION=$ALI_VERSION" \
         --env "ALI_CONTEXT=$ALI_CONTEXT" \
-        --volume $HOME/alice/sw:$HOME/alice/sw \
+        --env "USEDEVTOOLSET=1" \
+        --volume $ALI_SW_VOLUME:$HOME/alice/sw \
         --volume $HOME/.globus:$HOME/.globus:ro \
         --volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
         --volume $HOME/alice/${ALI_CONTEXT}/alidist:$HOME/alice/${ALI_CONTEXT}/alidist:ro \
         $@ \
         centos7-ali-core \
-        $exec -ls
+        $exec
 
     # the image used, centos7-ali-core, is built from aphecetche/centos7-ali-core, by adding
     # the local user as the default user (instead of root), so we can matching UID/GUI on
@@ -166,7 +181,7 @@ ali_docker() {
 ali_vim() {
 
     docker run -it --rm -v "$PWD:$PWD" \ 
-    --volume $HOME/alice/sw:/home/$UID/alice/sw \
+    --volume $ALI_SW_VOLUME:/home/$UID/alice/sw \
         --volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
         -w "$PWD" -p 1337:1337 alpine-vim $@
 }
@@ -184,16 +199,14 @@ ali_o2() {
 
 ali_alo() {
 
-    ali_docker o2-dev alo \
+    ali_docker o2-dev alo --detach \
         -v $HOME/alice/o2-dev/AliRoot:$HOME/alice/o2-dev/AliRoot:ro \
-        -v $HOME/alice/o2-dev/O2:$HOME/alice/o2-dev/O2:ro \
-        -v $HOME/alice/o2-dev/FairRoot:$HOME/alice/o2-dev/FairRoot:ro \
-        -v $HOME/alice/o2-dev/ROOT:$HOME/alice/o2-dev/ROOT:ro \
-        -v $HOME/alice/o2-dev/DDS:$HOME/alice/o2-dev/DDS \
+        -v $HOME/alice/o2-dev/O2:$HOME/alice/o2-dev/O2:rw \
         -v$(pwd):/data
 
     # note that DDS can not be mounted read-only as some version file is generated in the
     # source directory (under etc/version) during install stage...
+    # same note for O2 just because of compile_commands.json ...
 }
 
 ali_physics() {
