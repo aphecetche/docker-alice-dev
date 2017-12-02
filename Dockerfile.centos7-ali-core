@@ -21,8 +21,18 @@ RUN groupadd $userGroup -g $userGroupId && useradd $userName -m -u $userId -g $u
 RUN mkdir -p /home/$userName/alice/sw \
 && chown -R $userName:$userGroup /home/$userName/ \
 && mkdir -p /Users/$userName/alice/sw \
-&& chown -R $userName:$userGroup /Users/$userName/
+&& chown -R $userName:$userGroup /Users/$userName/ \
+&& mkdir -p /Users/$userName/alice/alo \
+&& chown -R $userName:$userGroup /Users/$userName/alice/alo \
+&& mkdir -p /home/$userName/alice/alo \
+&& chown -R $userName:$userGroup /home/$userName/alice/alo \
+&& mkdir -p /Users/$userName/alice/alidist \
+&& chown -R $userName:$userGroup /Users/$userName/alice/alidist \
+&& mkdir -p /home/$userName/alice/alidist \
+&& chown -R $userName:$userGroup /home/$userName/alice/alidist
 
 ADD bashrc /home/$userName/.bashrc
+ADD pr-check.sh /home/$userName/pr-check.sh
+ADD devtoolset.sh /home/$userName/devtoolset.sh
 
 USER $userName

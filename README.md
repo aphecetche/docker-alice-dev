@@ -2,6 +2,12 @@
 
 Some utilities to work with docker containers to develop Alice software
 
+# Executive summary
+
+Use `ali_alo` to enter a container to develop `alo`.
+
+Use `ali_alo_pr_check [prnumber]` to check compilation of github pull request number [prnumber].
+
 # Usage
 
 Typical usage would be :
