@@ -215,7 +215,7 @@ ali_alo_pr_check() {
     docker run --env PATH=$PATH:/home/laurent -it --rm \
         -v vc_alice_sw:$HOME/alice/sw \
         -v vc_alice_alo_src:$HOME/alice/alo \
-        -v vc_alice_aldist_src:$HOME/alice/alidist \
+        -v vc_alice_alidist_src:$HOME/alice/alidist \
         centos7-ali-core devtoolset.sh "pr-check.sh $1"
         # centos7-ali-core devtoolset.sh bash
 }
@@ -247,7 +247,8 @@ ali_cvmfs() {
     docker_run_withX11 --rm --interactive --tty --privileged \
         -v $HOME/.globus:/root/.globus \
         -v $HOME/.rootrc:/root/.rootrc \
-        $@ aphecetche/centos7-ali-cvmfs $version
+        -v /cvmfs:/cvmfs:cached \
+        $@ aphecetche/centos7-ali-core $version
 }
 
 ali_root6() 
