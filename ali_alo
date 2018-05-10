@@ -1,0 +1,15 @@
+#!/bin/sh
+
+ali_alo() {
+
+    ali_docker o2-dev alo --detach \
+        -v $HOME/alice/o2-dev/AliRoot:$HOME/alice/o2-dev/AliRoot:ro \
+        -v $HOME/alice/o2-dev/O2:$HOME/alice/o2-dev/O2:rw \
+        -v$(pwd):/data
+
+    # note that DDS can not be mounted read-only as some version file is generated in the
+    # source directory (under etc/version) during install stage...
+    # same note for O2 just because of compile_commands.json ...
+}
+
+ali_alo

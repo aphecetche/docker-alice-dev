@@ -1,0 +1,53 @@
+#!/bin/sh
+
+ali_start_container() {
+
+	# start a detached aliroot container, in x11 mode
+	#
+	# on input a number of bind mounted directories (ro) :
+	# - .globus to get the certificate for alien-token-init
+	# - $what (either AliRoot or AliPhysics) to get the relevant source code
+	# - alidist (to avoid having to mount the context directory rw in the container)
+	#
+
+	ali_assert_sw_volume
+
+	export ALI_CONTEXT=$1
+	export ALI_WHAT=$2
+
+	local detach="--rm"
+	local exec="/bin/bash"
+
+	if [ $# -ge 4 ]; then
+		option=$4
+		if [ "$option" = "--detach" ]; then
+			detach="--detach"
+			exec=""
+			shift
+		fi
+	fi
+
+	shift 3
+
+	echo "detach=$detach exec=$exec"
+
+	docker_run_withX11 --interactive --tty $detach \
+		--name "$ALI_CONTEXT" \
+		--env "ALI_WHAT=$ALI_WHAT" \
+		--env "ALI_VERSION=$ALI_VERSION" \
+		--env "ALI_CONTEXT=$ALI_CONTEXT" \
+		--env "USEDEVTOOLSET=1" \
+		--volume $ALI_SW_VOLUME:$HOME/alice/sw \
+		--volume $HOME/.globus:$HOME/.globus:ro \
+		--volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
+		--volume $HOME/alice/${ALI_CONTEXT}/alidist:$HOME/alice/${ALI_CONTEXT}/alidist:ro \
+		$@ \
+		centos7-ali-core \
+		$exec
+
+	# the image used, centos7-ali-core, is built from aphecetche/centos7-ali-core, by adding
+	# the local user as the default user (instead of root), so we can matching UID/GUI on
+	# the filesystem. See github.com/aphecetche/docker-alice-dev
+}
+
+ali_start_container $@

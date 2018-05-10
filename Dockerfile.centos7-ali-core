@@ -29,7 +29,11 @@ RUN mkdir -p /home/$userName/alice/sw \
 && mkdir -p /Users/$userName/alice/alidist \
 && chown -R $userName:$userGroup /Users/$userName/alice/alidist \
 && mkdir -p /home/$userName/alice/alidist \
-&& chown -R $userName:$userGroup /home/$userName/alice/alidist
+&& chown -R $userName:$userGroup /home/$userName/alice/alidist \
+&& mkdir -p /Users/$userName/alice/O2 \
+&& chown -R $userName:$userGroup /Users/$userName/alice/O2 \
+&& mkdir -p /home/$userName/alice/O2 \
+&& chown -R $userName:$userGroup /home/$userName/alice/O2
 
 ADD bashrc /home/$userName/.bashrc
 ADD pr-check.sh /home/$userName/pr-check.sh

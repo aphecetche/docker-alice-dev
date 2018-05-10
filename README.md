@@ -2,19 +2,24 @@
 
 Some utilities to work with docker containers to develop Alice software
 
-# Executive summary
+## Executive summary
 
 Use `ali_alo` to enter a container to develop `alo`.
 
-Use `ali_alo_pr_check [prnumber]` to check compilation of github pull request number [prnumber].
+Use `ali_alo_pr_check [prnumber]` to check compilation of `alo` github pull request number [prnumber].
 
-# Usage
+Use `ali_o2_pr_check [prnumber] O2` to check compilation of `O2` github pull request number [prnumber].
 
-Typical usage would be :
+## Installation
 
-- execute (once) the `build.sh` script to generate a local image (based on aphecetche/centos7-ali-core) with the local
+- install the [docker tools](https://github.com/aphecetche/scripts/tree/master/docker)
+- copy the `docker-alice-dev.modulefile` to `$HOME/privatemodulefiles/docker-alice-dev`
+- module load docker-alice-dev
+- execute the `build.sh` script to generate a local image (based on aphecetche/centos7-ali-core) with the local
     user
-- `. ./init.sh` to defines the bash functions to be used (below)
+ 
+## Usage 
+
 - `ali_docker o2-dev O2` wil start a `o2-dev` container or connect to it if it already exists. Will also setup some tmux windows if under tmux and environment variable USE_TMUX is set.
 - `ali_start_container o2-dev O2` will create *and* enter the `o2-dev` container.
 - `ali_start_container o2-dev O2 --detach` will just create the container
@@ -22,7 +27,6 @@ Typical usage would be :
 Convenience shortcuts are defined, e.g `ali_alo` creates a container to develop
 [alo](https://github.com/aphecetche/alo).
 
-See `init.sh` comments for more information.
 
 # Notes on performance
 

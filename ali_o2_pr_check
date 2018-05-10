@@ -1,0 +1,13 @@
+#!/bin/sh
+
+ali_o2_pr_check() {
+	docker volume create --name vc_alice_o2_src
+	docker volume create --name vc_alice_alidist_src
+	docker run --env PATH=$PATH:/home/laurent -it --rm \
+		-v vc_alice_sw:$HOME/alice/sw:delegated \
+		-v vc_alice_o2_src:$HOME/alice/O2:delegated \
+		-v vc_alice_alidist_src:$HOME/alice/alidist:delegated \
+		centos7-ali-core devtoolset.sh "pr-check.sh $1 O2"
+}
+
+ali_o2_pr_check $1
