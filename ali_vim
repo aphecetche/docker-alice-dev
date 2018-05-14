@@ -3,7 +3,7 @@
 ali_vim() {
 
 	docker run -it --rm -v "$PWD:$PWD" \ 
-	--volume $ALI_SW_VOLUME:/home/$UID/alice/sw \
+	--volume $(ali_sw_volume):/home/$UID/alice/sw \
 		--volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
 		-w "$PWD" -p 1337:1337 alpine-vim $@
 }

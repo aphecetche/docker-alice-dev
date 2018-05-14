@@ -1,7 +1,6 @@
 #!/bin/sh
 
-ALI_SW_VOLUME="vc_alice_sw"
-#ALI_SW_VOLUME="$HOME/alice/sw"
+ALI_SW_VOLUME=$(ali_sw_volume $1)
 
 if [ "$ALI_SW_VOLUME" = "vc_alice_sw" ]; then
 	docker volume create --name $ALI_SW_VOLUME

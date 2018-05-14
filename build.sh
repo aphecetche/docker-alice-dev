@@ -7,11 +7,12 @@ la_build()
 {
   local baseimage=$1
 
-    docker build -f Dockerfile.$baseimage -t $baseimage --pull . \
+    docker build -f Dockerfile.$baseimage -t $baseimage-user . \
     --build-arg userName=$userName \
     --build-arg userId=$UID \
     --build-arg userGroupId=$userGroupId \
-    --build-arg userGroup=$userGroup
+    --build-arg userGroup=$userGroup \
+    --pull 
 }
 
 userName=$(whoami)

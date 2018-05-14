@@ -19,9 +19,13 @@ ali_docker() {
 	fi
 
 	if ! dexist "$context"; then
-		# start a new container
-		echo "trailing arguments passed as is : $@"
+		echo "--- Starting a new container"
+		echo "----- trailing arguments passed as is : $@"
+		detach=${1:-"dummy"}
 		ali_start_container $context $what --detach $@
+		if [ $detach != "--detach" ]; then
+			exit 0
+		fi
 		sleep 2
 	fi
 
@@ -29,7 +33,7 @@ ali_docker() {
 	if [[ $TMUX && $USE_TMUX ]]; then
 		ali_setup_tmux $context $what
 	else
-		# simply connect to the container
+		echo "--- Connecting to container..."
 		docker exec -it $context /bin/bash
 	fi
 }

@@ -15,8 +15,7 @@ Use `ali_o2_pr_check [prnumber] O2` to check compilation of `O2` github pull req
 - install the [docker tools](https://github.com/aphecetche/scripts/tree/master/docker)
 - copy the `docker-alice-dev.modulefile` to `$HOME/privatemodulefiles/docker-alice-dev`
 - module load docker-alice-dev
-- execute the `build.sh` script to generate a local image (based on aphecetche/centos7-ali-core) with the local
-    user
+- execute the `build.sh` script to generate a local image (based on aphecetche/centos7-ali-core) with the local user
  
 ## Usage 
 

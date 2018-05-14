@@ -29,7 +29,12 @@ ali_start_container() {
 
 	shift 3
 
-	echo "detach=$detach exec=$exec"
+    export ALI_SW_VOLUME=$(ali_sw_volume)
+	echo "----- ALI_CONTEXT=$ALI_CONTEXT"
+	echo "----- ALI_WHAT=$ALI_WHAT"
+	echo "----- ALI_SW_VOLUME=$ALI_SW_VOLUME"
+	echo "----- detach=$detach"
+	echo "----- exec=$exec"
 
 	docker_run_withX11 --interactive --tty $detach \
 		--name "$ALI_CONTEXT" \
@@ -39,15 +44,11 @@ ali_start_container() {
 		--env "USEDEVTOOLSET=1" \
 		--volume $ALI_SW_VOLUME:$HOME/alice/sw \
 		--volume $HOME/.globus:$HOME/.globus:ro \
-		--volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:ro \
+		--volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:rw \
 		--volume $HOME/alice/${ALI_CONTEXT}/alidist:$HOME/alice/${ALI_CONTEXT}/alidist:ro \
 		$@ \
-		centos7-ali-core \
+		$(ali_default_image) \
 		$exec
-
-	# the image used, centos7-ali-core, is built from aphecetche/centos7-ali-core, by adding
-	# the local user as the default user (instead of root), so we can matching UID/GUI on
-	# the filesystem. See github.com/aphecetche/docker-alice-dev
 }
 
 ali_start_container $@
