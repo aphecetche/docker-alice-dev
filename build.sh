@@ -6,18 +6,21 @@
 la_build()
 {
   local baseimage=$1
-
-    docker build -f Dockerfile.$baseimage -t $baseimage-user . \
+  local pull="--pull"
+  if [[ "$2" == "local" ]]; then
+    pull=""
+  fi
+    echo docker build -f Dockerfile.$baseimage -t $baseimage-user . \
     --build-arg userName=$userName \
     --build-arg userId=$UID \
     --build-arg userGroupId=$userGroupId \
     --build-arg userGroup=$userGroup \
-    --pull 
+    $pull 
 }
 
 userName=$(whoami)
 userGroup=$(id -gn $userName)
 userGroupId=$(id -g $userName)
 
-la_build centos7-ali-core
+la_build centos7-ali-core ${1:-local}
 

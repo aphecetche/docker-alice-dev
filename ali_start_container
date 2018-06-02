@@ -1,54 +1,93 @@
 #!/bin/sh
 
-ali_start_container() {
+remove=1
 
-	# start a detached aliroot container, in x11 mode
-	#
-	# on input a number of bind mounted directories (ro) :
-	# - .globus to get the certificate for alien-token-init
-	# - $what (either AliRoot or AliPhysics) to get the relevant source code
-	# - alidist (to avoid having to mount the context directory rw in the container)
-	#
-
-	ali_assert_sw_volume
-
-	export ALI_CONTEXT=$1
-	export ALI_WHAT=$2
-
-	local detach="--rm"
-	local exec="/bin/bash"
-
-	if [ $# -ge 4 ]; then
-		option=$4
-		if [ "$option" = "--detach" ]; then
-			detach="--detach"
-			exec=""
-			shift
-		fi
-	fi
-
-	shift 3
-
-    export ALI_SW_VOLUME=$(ali_sw_volume)
-	echo "----- ALI_CONTEXT=$ALI_CONTEXT"
-	echo "----- ALI_WHAT=$ALI_WHAT"
-	echo "----- ALI_SW_VOLUME=$ALI_SW_VOLUME"
-	echo "----- detach=$detach"
-	echo "----- exec=$exec"
-
-	docker_run_withX11 --interactive --tty $detach \
-		--name "$ALI_CONTEXT" \
-		--env "ALI_WHAT=$ALI_WHAT" \
-		--env "ALI_VERSION=$ALI_VERSION" \
-		--env "ALI_CONTEXT=$ALI_CONTEXT" \
-		--env "USEDEVTOOLSET=1" \
-		--volume $ALI_SW_VOLUME:$HOME/alice/sw \
-		--volume $HOME/.globus:$HOME/.globus:ro \
-		--volume $HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:$HOME/alice/${ALI_CONTEXT}/${ALI_WHAT}:rw \
-		--volume $HOME/alice/${ALI_CONTEXT}/alidist:$HOME/alice/${ALI_CONTEXT}/alidist:ro \
-		$@ \
-		$(ali_default_image) \
-		$exec
+usage() {
+	echo "ali_start_container"
+	echo "\t--name specify the name of the container"
+	echo "\t--volume-sw the name of the volume or directory that will hold the build artifacts"
+	echo "\t--volume-o2 the name of the volume or directory that contains O2 source"
+	echo "\t--volume-alo the name of the volume or directory that contains alo source"
+	echo "\t--volume-alidist the name of the volume or directory that contains alidist source"
+	echo "\t--rm (default) the container will be destroyed automatically on exit"
+	echo "\t--detach starts the container in detached mode"
+	echo "\t--globus mounts the $HOME/.globus directory into the container"
+	echo "\t--exec the command to execute ($exec by default) in the container"
 }
 
-ali_start_container $@
+exec="/bin/bash"
+if [ $# -eq 0 ]; then
+	usage
+	exit
+fi
+
+while [[ "$1" == --* ]]; do
+	par=$1
+	shift
+	val=${1:-unknown}
+	shift
+	case $par in
+	--help)
+		usage
+		exit
+		;;
+	--name)
+		name=$val
+		;;
+	--volume-sw)
+		sw=$val
+		;;
+	--volume-o2)
+		o2=$val
+		;;
+	--volume-alo)
+		alo=$val
+		;;
+	--volume-alidist)
+		alidist=$val
+		;;
+	--detach)
+		detach=1
+		unset remove
+		unshift
+		;;
+	--globus)
+		globus=1
+		unshift
+		;;
+	--rm)
+		remove=1
+		unset detach
+		unshift
+		;;
+	*)
+		echo "ERROR: unknown parameter \"$par\""
+		usage
+		exit 1
+		;;
+	esac
+done
+
+echo "remaining=$@ sw=$sw o2=$o2 alo=$alo alidist=$alidist detach=$detach remove=$remove globus=$globus exec=$exec"
+
+# start a detached aliroot container, in x11 mode
+#
+# on input a number of (bind mounted directories | volumes) :
+# - .globus to get the certificate for alien-token-init (if --globus option was given)
+# - o2 and/or alo and/or alidist
+
+ali_assert_sw_volume $sw || exit 1
+
+docker_run_withX11 --interactive --tty \
+	${detach:+--detach} \
+	${remove:+--rm} \
+	${name:+--name "$name"} \
+	--env "USEDEVTOOLSET=1" \
+	${sw:+--volume $sw:$HOME/alice/sw} \
+	${globus:+--volume $HOME/.globus:$HOME/.globus:ro} \
+	${o2:+--volume $o2:$HOME/alice/O2:cached} \
+	${alo:+--volume $alo:$HOME/alice/alo} \
+	${alidist:+--volume $alidist:$HOME/alice/alidist} \
+	$@ \
+	$(ali_default_image) \
+	$exec

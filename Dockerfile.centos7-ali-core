@@ -40,3 +40,5 @@ ADD pr-check.sh /home/$userName/pr-check.sh
 ADD devtoolset.sh /home/$userName/devtoolset.sh
 
 USER $userName
+
+RUN cabal update && cabal install shake

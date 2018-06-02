@@ -1,7 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
-ALI_SW_VOLUME=$(ali_sw_volume $1)
+test -d $1 && exit 0
 
-if [ "$ALI_SW_VOLUME" = "vc_alice_sw" ]; then
-	docker volume create --name $ALI_SW_VOLUME
+if [[ "$1" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]+$ ]]; then
+	docker volume create --name $1 > /dev/null
+	exit 0
+else
+	echo "incorrect volume name $1"
+	exit 1
 fi
+
+echo "non existing directory $1" && exit 2
