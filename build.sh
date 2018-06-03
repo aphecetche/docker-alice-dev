@@ -10,7 +10,7 @@ la_build()
   if [[ "$2" == "local" ]]; then
     pull=""
   fi
-    echo docker build -f Dockerfile.$baseimage -t $baseimage-user . \
+    docker build -f Dockerfile.$baseimage -t $baseimage-user . \
     --build-arg userName=$userName \
     --build-arg userId=$UID \
     --build-arg userGroupId=$userGroupId \
