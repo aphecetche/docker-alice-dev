@@ -13,9 +13,12 @@ usage() {
 	echo "\t--detach starts the container in detached mode"
 	echo "\t--globus mounts the $HOME/.globus directory into the container"
 	echo "\t--exec the command to execute ($exec by default) in the container"
+	echo "\t--x11 container will access X11 resources"
 }
 
 exec="/bin/bash"
+docker_command="docker run"
+
 if [ $# -eq 0 ]; then
 	usage
 	exit
@@ -60,6 +63,9 @@ while [[ "$1" == --* ]]; do
 		unset detach
 		unshift
 		;;
+	--x11)
+		docker_command="docker_run_withX11"
+		;;
 	*)
 		echo "ERROR: unknown parameter \"$par\""
 		usage
@@ -78,7 +84,7 @@ echo "remaining=$@ sw=$sw o2=$o2 alo=$alo alidist=$alidist detach=$detach remove
 
 ali_assert_sw_volume $sw || exit 1
 
-docker_run_withX11 --interactive --tty \
+${docker_command} --interactive --tty \
 	${detach:+--detach} \
 	${remove:+--rm} \
 	${name:+--name "$name"} \
