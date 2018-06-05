@@ -9,6 +9,7 @@ usage() {
 	echo "\t--volume-o2 the name of the volume or directory that contains O2 source"
 	echo "\t--volume-alo the name of the volume or directory that contains alo source"
 	echo "\t--volume-alidist the name of the volume or directory that contains alidist source"
+	echo "\t--volume-aliroot the name of the volume or directory that contains aliroot source"
 	echo "\t--rm (default) the container will be destroyed automatically on exit"
 	echo "\t--detach starts the container in detached mode"
 	echo "\t--globus mounts the $HOME/.globus directory into the container"
@@ -28,7 +29,6 @@ while [[ "$1" == --* ]]; do
 	par=$1
 	shift
 	val=${1:-unknown}
-	shift
 	case $par in
 	--help)
 		usage
@@ -36,32 +36,38 @@ while [[ "$1" == --* ]]; do
 		;;
 	--name)
 		name=$val
+		shift
 		;;
 	--volume-sw)
 		sw=$val
+		shift
 		;;
 	--volume-o2)
 		o2=$val
+		shift
 		;;
 	--volume-alo)
 		alo=$val
+		shift
 		;;
 	--volume-alidist)
 		alidist=$val
+		shift
+		;;
+	--volume-aliroot)
+		aliroot=$val
+		shift
 		;;
 	--detach)
 		detach=1
 		unset remove
-		unshift
 		;;
 	--globus)
 		globus=1
-		unshift
 		;;
 	--rm)
 		remove=1
 		unset detach
-		unshift
 		;;
 	--x11)
 		docker_command="docker_run_withX11"
@@ -90,9 +96,10 @@ ${docker_command} --interactive --tty \
 	${name:+--name "$name"} \
 	--env "USEDEVTOOLSET=1" \
 	${sw:+--volume $sw:$HOME/alice/sw} \
-	${globus:+--volume $HOME/.globus:$HOME/.globus:ro} \
+	${globus:+--volume $HOME/.globus:/home/$USER/.globus:ro} \
 	${o2:+--volume $o2:$HOME/alice/O2:cached} \
 	${alo:+--volume $alo:$HOME/alice/alo} \
+	${aliroot:+--volume $aliroot:$HOME/alice/AliRoot} \
 	${alidist:+--volume $alidist:$HOME/alice/alidist} \
 	$@ \
 	$(ali_default_image) \
